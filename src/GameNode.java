@@ -14,8 +14,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.swing.SwingUtilities;
-
 /**
  * REMEMBER TO DELETE // Debug LINE BEFORE SUBMITTIN
  * Notes (REMEMBER TO DELETE BEFORE SUBMITTING):
@@ -35,7 +33,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 	private static final long serialVersionUID = -3637465977534510865L;
 	
 	private static final boolean invokeUI = true;
-	private static final boolean printBoardAndScore = true;
+	private static final boolean printBoardAndScore = false;
 
 	public String playerId;
 	// 1: primaryServer, 2: backupServe, 0: normalNode (used in GUI to indicate whether it is servers)
@@ -92,7 +90,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		// Start GUI Game
 		if (invokeUI){
 			gui = new GameGUI(N, K, playerId);
-			gui.updateBoard(game.getPlayers(), game.getBoard());
+			gui.updateBoard(role, game.getPlayers(), game.getBoard());
 		}
 		if(printBoardAndScore){
 			game.printScore();
@@ -142,7 +140,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		// Start GUI Game
 		if (invokeUI){
 			gui = new GameGUI(game.getN(), game.getK(), playerId);
-			gui.updateBoard(game.getPlayers(), game.getBoard());
+			gui.updateBoard(role, game.getPlayers(), game.getBoard());
 		}
 		if(printBoardAndScore){
 			game.printScore();
@@ -173,17 +171,22 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		System.out.println("--- Player ["+id+"] joined.");
 		System.out.println("--- Current players: "+nodes.keySet());
 		
-		// Create BACKUP server (if necessary)
-		if(backupServer == null){
+		// Create BACKUP server (if necessary, in case null or fail to ping)
+		try{
+			if(backupServer == null) throw new RemoteException();
+			backupServer.ping();
+		} catch (RemoteException e){
 			backupServer = node;
 			System.out.println("--- Player ["+id+"] is BACKUP server.");
 		}
-		
 		// Update info from PRIMARY server (this) to node: 
 		// 'primaryServer', 'backupServer', 'nodes', 'game'
 		// Update 'nodes', 'game' to BACKUP
 		updateNodeAndBackup(node);
 		
+		if (invokeUI){
+			gui.updateBoard(role, game.getPlayers(), game.getBoard());
+		}
 		if(printBoardAndScore){
 			game.printScore();
 			game.printBoard(); // Debug
@@ -237,6 +240,15 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		// 'primaryServer', 'backupServer', 'nodes', 'game'
 		// Update 'nodes', 'game' to BACKUP
 		updateNodeAndBackup(node);
+		
+		if (invokeUI){
+			gui.updateBoard(role, game.getPlayers(), game.getBoard());
+		}
+		if(printBoardAndScore){
+			game.printScore();
+			game.printBoard(); // Debug
+		}
+		
 		return ok;
 	}
 	/**
@@ -349,7 +361,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		}
 		// Update board
 		if(invokeUI){
-			gui.updateBoard(game.getPlayers(), game.getBoard());
+			gui.updateBoard(role, game.getPlayers(), game.getBoard());
 		}
 		
 		if(printBoardAndScore){

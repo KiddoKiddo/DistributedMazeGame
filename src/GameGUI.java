@@ -1,4 +1,5 @@
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.io.Serializable;
 import java.util.Map;
@@ -8,6 +9,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.UIManager;
+import javax.swing.plaf.ColorUIResource;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
@@ -17,6 +20,7 @@ public class GameGUI extends JFrame implements Serializable {
 	private static final long serialVersionUID = -2915642945247071751L;
 
 	int N, K;
+	String playerId;
 
 	JTable table;
 	JTable maze;
@@ -26,6 +30,7 @@ public class GameGUI extends JFrame implements Serializable {
 	GameGUI(int N, int K, String playerId) {
 		System.out.println("Init Board...");
 		
+		UIManager.put("Table.gridColor", new ColorUIResource(Color.gray));
 		JPanel panel = new JPanel(new BorderLayout(1, 2));
 
 		/**
@@ -61,6 +66,8 @@ public class GameGUI extends JFrame implements Serializable {
 		maze.setPreferredScrollableViewportSize(new Dimension(N*CELL_SIZE, N*CELL_SIZE));
 		maze.setFillsViewportHeight(true);
 		maze.setTableHeader(null);
+		maze.setFocusable(false);
+		maze.setRowSelectionAllowed(false);
 		setTableCellSize(maze, CELL_SIZE);
 
 		JScrollPane mazeBoard = new JScrollPane(maze);
@@ -69,13 +76,14 @@ public class GameGUI extends JFrame implements Serializable {
 		/**
 		 *  JFrame
 		 */
-		setTitle(playerId);
 		add(panel);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationByPlatform(true);
 		pack();
 		setMinimumSize(this.getSize());
 		setVisible(true);
+		
+		this.playerId = playerId;
 	}
 
 	private void setTableCellSize(JTable table, int size) {
@@ -94,20 +102,31 @@ public class GameGUI extends JFrame implements Serializable {
 		}
 	}
 	
-	public void updateBoard(Map<String, Player> players, String[][] board){
+	public void updateBoard(int role, Map<String, Player> players, String[][] board){
+		/**
+		 * Update role in the title
+		 */
+		setTitle(playerId + (role == 1? " (PRIMARY) " : role == 2? " (BACKUP) " : ""));
+		
 		/**
 		 * Score board
 		 */
-		
+		DefaultTableModel score = (DefaultTableModel) table.getModel();
+		score.setRowCount(0); // Clear
+		for	(String playerId : players.keySet()) {
+			Player p = players.get(playerId);
+	        score.addRow(new String[]{p.getId(), String.valueOf(p.getScore())});
+	    }
+	    score.fireTableDataChanged();
 		
 		/**
 		 *  Maze board
 		 */
-		DefaultTableModel tableModel = (DefaultTableModel) maze.getModel();
-		tableModel.setRowCount(0); // Clear
+		DefaultTableModel mazeModel = (DefaultTableModel) maze.getModel();
+		mazeModel.setRowCount(0); // Clear
 		for	(int i = 0; i < board.length; i++) {
-	        tableModel.addRow(board[i]);
+	        mazeModel.addRow(board[i]);
 	    }
-	    tableModel.fireTableDataChanged();
+	    mazeModel.fireTableDataChanged();
 	}
 }

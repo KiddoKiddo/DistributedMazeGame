@@ -21,7 +21,7 @@ public class Game implements Serializable {
 
 	private static final long serialVersionUID = 6148003629986301236L;
 
-	private static final String TREASURE = "x";
+	private static final String TREASURE = "*";
 	
 	int N, K;
 	Map<String, Player> players;
