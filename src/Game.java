@@ -93,7 +93,8 @@ public class Game implements Serializable {
 
 	public void removePlayer(String playerId) {
 		Player p = players.get(playerId);
-
+		if(p == null) return; // Already remove
+		
 		board[p.getLocation().getX()][p.getLocation().getY()] = null;
 		players.remove(playerId);
 	}
@@ -141,7 +142,7 @@ public class Game implements Serializable {
 			
 			// Increase score and generate treasure
 			if(foundTreasure){
-				System.out.println("You got a TREASURE!!!");
+				System.out.println("Player "+playerId+" got a TREASURE!!!");
 				player.increaseScore();
 				generateTreasures(1);
 			}

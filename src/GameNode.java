@@ -105,15 +105,16 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 	public void setupNormalGameNode(String playerId, GameNodeInterface otherNode) throws RemoteException {
 		this.role = 0;
 		
+		while(otherNode.getPrimaryServer()==null || otherNode.getNodes()==null || otherNode.getGame()==null){
+			// Wait a bit for the other node set up
+			try { Thread.sleep(100); } catch (InterruptedException e) { e.printStackTrace(); }
+		}
 		// Copy remote reference of servers, temporarily use 'nodes'
 		this.primaryServer = otherNode.getPrimaryServer();
 		this.backupServer = otherNode.getBackupServer();
 		this.nodes = otherNode.getNodes();
-		System.out.println("Here");
 		otherNode.getGame();
-		System.out.println("Here1");
 		this.game = new Game(otherNode.getGame());
-		System.out.println("Here2");
 		
 		// New node request primary server to join, 
 		// (info about servers on otherNode maybe out-of-date)
@@ -237,9 +238,6 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		// 'primaryServer', 'backupServer', 'nodes', 'game'
 		// Update 'nodes', 'game' to BACKUP
 		updateNodeAndBackup(node);
-		
-		System.out.println(node.getGame());
-		
 		return ok;
 	}
 	/**
@@ -334,7 +332,9 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		} catch (RemoteException e) {
 			System.out.println("Failed to request PRIMARY ('requestMove'). Contact BACKUP.");
 			try {
-				ok = backupServer.move(this, direction);
+				if(backupServer != null){
+					ok = backupServer.move(this, direction);
+				}
 			} catch (RemoteException e1) {
 				System.out.println("Failed to contact both servers ('requestMove'). Contact other up-to-date nodes");
 				
@@ -346,7 +346,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 			}
 		}
 		if(!ok){
-			System.out.println("Cannot move!!!");
+			System.out.println("!!!Cannot move!!!");
 		}
 		// Update board
 		if(invokeUI){
@@ -634,7 +634,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 							System.out.println("Joined the game. ["+ (System.currentTimeMillis()-start) + "ms] ");
 						}
 					} catch (RemoteException e) {
-						if(!found) System.out.println("FAILED");
+						if(!found) System.out.println("Retrying to contact other nodes...");
 					}
 				}
 				if(!found){
