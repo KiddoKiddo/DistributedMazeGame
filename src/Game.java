@@ -23,15 +23,9 @@ public class Game implements Serializable {
 
 	private static final String TREASURE = "x";
 	
-	int N;
-	int K;
+	int N, K;
 	Map<String, Player> players;
 	String[][] board;
-
-	final JPanel gui = new JPanel(new BorderLayout(1, 2));
-	JPanel mazeBoard;
-	JPanel scoreBoard;
-	JFrame frame;
 
 	public Game(int N, int K) throws GameException {
 		if (K > N * N) throw new GameException("Too many treasures");
@@ -42,13 +36,6 @@ public class Game implements Serializable {
 		generateTreasures(K);
 	}
 
-	public Game(int N, int K, Map<String, Player> p, String[][] b) throws GameException {
-		this.N = N;
-		this.K = K;
-		this.players = p;
-		this.board = b;
-	}
-
 	public Game(Game game) {
 		this.N = game.getN();
 		this.K = game.getK();
@@ -56,20 +43,12 @@ public class Game implements Serializable {
 		this.board = game.getBoard();
 	}
 
-	/**
-	 * Purpose of this method is to remove those crashed players from the board.
-	 * The argument is the list of current active players
-	 * 
-	 * @param set
-	 * @throws GameException
-	 */
 	public void updatePlayers(Set<String> currentPlayers) {
 		for (String playerId : players.keySet()) {
 			if (!currentPlayers.contains(playerId)) {
 				removePlayer(playerId);
 			}
 		}
-
 	}
 
 	public Location randomEmptyLocation() {
@@ -132,8 +111,7 @@ public class Game implements Serializable {
 		}
 		if (validLocation(dest) && ! isOccupiedByPlayer(dest)) {
 			
-			boolean foundTreasure = false;
-			if(isOccupiedByTreasure(dest)) foundTreasure = true;
+			boolean foundTreasure = isOccupiedByTreasure(dest);
 			
 			// Move player
 			board[player.getLocation().getX()][player.getLocation().getY()] = null;
@@ -159,76 +137,6 @@ public class Game implements Serializable {
 			board[treasure.getX()][treasure.getY()] = TREASURE;
 			count++;
 		}
-	}
-
-	public void initBoard(String currentPlayerID){
-		System.out.println("Init Board...");
-		scoreBoard = new JPanel();
-		scoreBoard.setBorder(new LineBorder(Color.BLACK));
-		
-		String[] scoreColumns = new String[] {"Player ID", "Score"};
-		Object[][] scoreTable = new Object[players.size()][2];
-		
-		JTable table = new JTable(scoreTable, scoreColumns);
-        JScrollPane tableBoard = new JScrollPane(table);
-        table.setPreferredScrollableViewportSize(new Dimension(N*15, N*30));
-        table.setFillsViewportHeight(true);
-        
-        scoreBoard.add(tableBoard);  
-		gui.add(scoreBoard, BorderLayout.WEST);
-		
-		mazeBoard = new JPanel(new GridLayout(N,N));
-		mazeBoard.setBorder(new LineBorder(Color.BLACK));
-		for (int i = 0; i < N; i++){
-        	for (int j = 0; j < N; j++){
-        		JButton b = new JButton();
-        		b.setPreferredSize(new Dimension(30, 30));
-                b.setBackground(Color.WHITE);
-                mazeBoard.add(b);
-        	}
-        }
-		gui.add(mazeBoard);
-		
-		frame = new JFrame(currentPlayerID);
-        frame.add(gui);
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setLocationByPlatform(true);
-        frame.pack();
-        frame.setMinimumSize(frame.getSize());
-        frame.setVisible(true);
-	}
-	
-	public void updateBoard(int role){
-		System.out.println("Updating Board...");
-		String[] scoreColumns = new String[] {"Player ID", "Score"};
-		Object[][] scoreTable = new Object[players.size()][2];
-		int row = 0;
-		for (String playerId : players.keySet()){
-        	scoreTable[row][0] = players.get(playerId).id;
-        	scoreTable[row][1] = players.get(playerId).score;
-        	row++;
-        }
-		
-        JTable table = new JTable(scoreTable, scoreColumns);
-        JScrollPane tableBoard = new JScrollPane(table);
-        table.setPreferredScrollableViewportSize(new Dimension(N*15, N*30));
-        table.setFillsViewportHeight(true);
-        scoreBoard.removeAll();
-        scoreBoard.add(tableBoard);
-        scoreBoard.revalidate();
-        scoreBoard.repaint();
-        
-        mazeBoard.removeAll();
-        for (int i = 0; i < N; i++){
-        	for (int j = 0; j < N; j++){
-        		JButton b = new JButton(board[i][j]);
-        		b.setPreferredSize(new Dimension(30, 30));
-                b.setBackground(Color.WHITE);
-                mazeBoard.add(b);
-        	}
-        }
-        mazeBoard.revalidate();
-        mazeBoard.repaint();
 	}
 
 	public int getN() {

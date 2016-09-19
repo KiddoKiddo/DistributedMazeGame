@@ -34,8 +34,8 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 
 	private static final long serialVersionUID = -3637465977534510865L;
 	
-	private static final boolean invokeUI = false;
-	private static final boolean printBoardAndScore = false;
+	private static final boolean invokeUI = true;
+	private static final boolean printBoardAndScore = true;
 
 	public String playerId;
 	// 1: primaryServer, 2: backupServe, 0: normalNode (used in GUI to indicate whether it is servers)
@@ -47,6 +47,8 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 
 	GameNodeInterface primaryServer;
 	GameNodeInterface backupServer;
+	
+	GameGUI gui;
 	
 	/**
 	 *  Data below need to be synchronously updated
@@ -89,14 +91,14 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 				
 		// Start GUI Game
 		if (invokeUI){
-			game.initBoard(playerId);
-			game.updateBoard(role);
+			gui = new GameGUI(N, K, playerId);
+			gui.updateBoard(game.getPlayers(), game.getBoard());
 		}
-		
 		if(printBoardAndScore){
 			game.printScore();
 			game.printBoard(); // Debug
 		}
+		
 		// For PRIMARY to check for inactive nodes
 		setupCleanNodesTask();
 	}
@@ -113,7 +115,6 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		this.primaryServer = otherNode.getPrimaryServer();
 		this.backupServer = otherNode.getBackupServer();
 		this.nodes = otherNode.getNodes();
-		otherNode.getGame();
 		this.game = new Game(otherNode.getGame());
 		
 		// New node request primary server to join, 
@@ -140,11 +141,8 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		
 		// Start GUI Game
 		if (invokeUI){
-//			startOutputThread();
-			game.initBoard(playerId);
-			game.updateBoard(role);
+			gui = new GameGUI(game.getN(), game.getK(), playerId);
 		}
-		
 		if(printBoardAndScore){
 			game.printScore();
 			game.printBoard(); // Debug
@@ -349,9 +347,8 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 			System.out.println("!!!Cannot move!!!");
 		}
 		// Update board
-		if(invokeUI){
-			this.game.updateBoard(role);
-		}
+//		if(invokeUI){
+//		}
 		
 		if(printBoardAndScore){
 			game.printScore();
@@ -525,17 +522,6 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		};
 		input.start();
 	}
-	
-//	private void startOutputThread(){
-//		output = new Thread() {
-//			@Override
-//	        public void run() {
-//				game.initBoard(playerId);
-//				game.updateBoard(role);
-//	        }
-//		};
-//		output.start();
-//	}
 	
 	private void getInput() throws IOException{
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));

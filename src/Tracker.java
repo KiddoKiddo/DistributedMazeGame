@@ -150,8 +150,8 @@ public class Tracker extends UnicastRemoteObject implements TrackerInterface {
 		nodes.add(node);
 		
 		// The playerId should be unique hence do not expect the error here
-		Registry registry = LocateRegistry.getRegistry(port);
-		registry.bind(nodeName, node);
+//		Registry registry = LocateRegistry.getRegistry(port);
+//		registry.bind(nodeName, node);
 
 		System.out.println("Successfully register node [" + nodeName + "]");
 		return isPrimary;
