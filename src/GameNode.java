@@ -142,6 +142,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		// Start GUI Game
 		if (invokeUI){
 			gui = new GameGUI(game.getN(), game.getK(), playerId);
+			gui.updateBoard(game.getPlayers(), game.getBoard());
 		}
 		if(printBoardAndScore){
 			game.printScore();
@@ -347,8 +348,9 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 			System.out.println("!!!Cannot move!!!");
 		}
 		// Update board
-//		if(invokeUI){
-//		}
+		if(invokeUI){
+			gui.updateBoard(game.getPlayers(), game.getBoard());
+		}
 		
 		if(printBoardAndScore){
 			game.printScore();

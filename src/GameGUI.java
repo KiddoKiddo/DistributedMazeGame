@@ -4,9 +4,11 @@ import java.io.Serializable;
 import java.util.Map;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
@@ -16,7 +18,6 @@ public class GameGUI extends JFrame implements Serializable {
 
 	int N, K;
 
-	final JPanel panel = new JPanel(new BorderLayout(1, 2));
 	JTable table;
 	JTable maze;
 	
@@ -24,6 +25,8 @@ public class GameGUI extends JFrame implements Serializable {
 
 	GameGUI(int N, int K, String playerId) {
 		System.out.println("Init Board...");
+		
+		JPanel panel = new JPanel(new BorderLayout(1, 2));
 
 		/**
 		 * Score board
@@ -79,10 +82,15 @@ public class GameGUI extends JFrame implements Serializable {
 		// Row
 		table.setRowHeight(size);
 		
+		// Set align
+		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+		centerRenderer.setHorizontalAlignment( JLabel.CENTER );
+		
 		// Column
 		for (int i = 0; i < table.getColumnModel().getColumnCount(); i++) {
 			TableColumn column = table.getColumnModel().getColumn(i);
 			column.setPreferredWidth(size);
+			column.setCellRenderer( centerRenderer );
 		}
 	}
 	
@@ -96,43 +104,10 @@ public class GameGUI extends JFrame implements Serializable {
 		 *  Maze board
 		 */
 		DefaultTableModel tableModel = (DefaultTableModel) maze.getModel();
-	    for (int i = 0; i < board.length; i++) {
-	    	tableModel.removeRow(i);
+		tableModel.setRowCount(0); // Clear
+		for	(int i = 0; i < board.length; i++) {
 	        tableModel.addRow(board[i]);
 	    }
-	    maze.setModel(tableModel);
+	    tableModel.fireTableDataChanged();
 	}
-
-	// public void updateBoard(int role){
-	// System.out.println("Updating Board...");
-	// String[] scoreColumns = new String[] {"Player ID", "Score"};
-	// Object[][] scoreTable = new Object[players.size()][2];
-	// int row = 0;
-	// for (String playerId : players.keySet()){
-	// scoreTable[row][0] = players.get(playerId).id;
-	// scoreTable[row][1] = players.get(playerId).score;
-	// row++;
-	// }
-	//
-	// JTable table = new JTable(scoreTable, scoreColumns);
-	// JScrollPane tableBoard = new JScrollPane(table);
-	// table.setPreferredScrollableViewportSize(new Dimension(N*15, N*30));
-	// table.setFillsViewportHeight(true);
-	// scoreBoard.removeAll();
-	// scoreBoard.add(tableBoard);
-	// scoreBoard.revalidate();
-	// scoreBoard.repaint();
-	//
-	// mazeBoard.removeAll();
-	// for (int i = 0; i < N; i++){
-	// for (int j = 0; j < N; j++){
-	// JButton b = new JButton(board[i][j]);
-	// b.setPreferredSize(new Dimension(30, 30));
-	// b.setBackground(Color.WHITE);
-	// mazeBoard.add(b);
-	// }
-	// }
-	// mazeBoard.revalidate();
-	// mazeBoard.repaint();
-	// }
 }
