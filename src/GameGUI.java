@@ -28,10 +28,8 @@ public class GameGUI extends JFrame implements Serializable {
 	private int CELL_SIZE = 20;
 
 	GameGUI(int N, int K, String playerId) {
-		System.out.println("Init Board...");
-		
 		UIManager.put("Table.gridColor", new ColorUIResource(Color.gray));
-		JPanel panel = new JPanel(new BorderLayout(1, 2));
+		JPanel panel = new JPanel(new BorderLayout());
 
 		/**
 		 * Score board
@@ -46,6 +44,7 @@ public class GameGUI extends JFrame implements Serializable {
 		};
 		table.setPreferredScrollableViewportSize(new Dimension(150, (N-1)*CELL_SIZE));
 		table.setFillsViewportHeight(true);
+		table.setRowHeight(CELL_SIZE);
 		
 		DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
 		tableModel.setColumnIdentifiers(headers);
@@ -58,7 +57,6 @@ public class GameGUI extends JFrame implements Serializable {
 		 */
 		maze = new JTable(N, N) {
 			private static final long serialVersionUID = 3739426267786323567L;
-
 			public boolean isCellEditable(int nRow, int nCol) {
 				return false;
 			}
@@ -80,6 +78,7 @@ public class GameGUI extends JFrame implements Serializable {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationByPlatform(true);
 		pack();
+		setMinimumSize(getSize());
 		setResizable(false);
 		setVisible(true);
 		
@@ -102,7 +101,7 @@ public class GameGUI extends JFrame implements Serializable {
 		}
 	}
 	
-	public void updateBoard(int role, Map<String, Player> players, String[][] board){
+	public synchronized void updateBoard(int role, Map<String, Player> players, String[][] board){
 		/**
 		 * Update role in the title
 		 */

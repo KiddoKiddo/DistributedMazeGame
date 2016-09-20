@@ -14,20 +14,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * REMEMBER TO DELETE // Debug LINE BEFORE SUBMITTIN
- * Notes (REMEMBER TO DELETE BEFORE SUBMITTING):
- * - How to detect crashed NORMAL node?
- * 		+ When one of the servers fails, it ping all nodes (to generate the new servers) 
- * 		(and conveniently remove those inactive).
- * 		+ Periodically remove inactive nodes.
- * - How to detect crashed BACKUP?
- * 		+ After PRIMNARY server 'move' or 'addNewNode', it updates current 'game' and 'nodes' to the BACKUP 
- * 		--> know whether it fails
- * - How to detect crashed PRIMARY?
- * 		+ When the server receives 'move' or 'addNewNode' request is BACKUP
- *
- */
 public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 
 	private static final long serialVersionUID = -3637465977534510865L;
@@ -39,7 +25,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 	// 1: primaryServer, 2: backupServe, 0: normalNode (used in GUI to indicate whether it is servers)
 	int role;
 	
-	// Flag to resovle new request ('move', 'addNewNode') coming while handling PRIMARY crash 
+	// Flag to resolve new request ('move', 'addNewNode') coming while handling PRIMARY crash 
 	boolean handlingPRIMARYCrash = false;
 	boolean handlingBACKUPCrash = false;
 
@@ -55,10 +41,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 	public Game game;
 	public Map<String, GameNodeInterface> nodes;
 
-	/*
-	 * This thread can be OPTIONALY added to GUI (if have time) 
-	 */
-	public static Thread input, output; 
+	public static Thread input; 
 	
 	@Override
 	public String toString() {
@@ -94,7 +77,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		}
 		if(printBoardAndScore){
 			game.printScore();
-			game.printBoard(); // Debug
+			game.printBoard();
 		}
 		
 		// For PRIMARY to check for inactive nodes
@@ -144,14 +127,13 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		}
 		if(printBoardAndScore){
 			game.printScore();
-			game.printBoard(); // Debug
+			game.printBoard();
 		}
 	}
 
 	/*----------------------------------------------------------
 	 		This is SERVER side functions
 	 ----------------------------------------------------------*/
-	
 	/**
 	 * This method should be invoked by setupNormalGameNode()
 	 */
@@ -184,18 +166,18 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		// Update 'nodes', 'game' to BACKUP
 		updateNodeAndBackup(node);
 		
-		// Update board after resolve other user's request to move
+		// Update board PRIMARY after resolve other user's request to move
 		if (invokeUI && gui != null){
 			gui.updateBoard(role, game.getPlayers(), game.getBoard());
 		}
 		if(printBoardAndScore){
 			game.printScore();
-			game.printBoard(); // Debug
+			game.printBoard();
 		}
 	}
 	/**
 	 * This method should be invoked by requestMove()
-	 * This method is not synchronous because, multiple players can move at the same time.
+	 * This method is not synchronous because multiple players can move at the same time.
 	 */
 	@Override
 	public boolean move(GameNodeInterface node, int direction) throws RemoteException{
@@ -247,7 +229,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		}
 		if(printBoardAndScore){
 			game.printScore();
-			game.printBoard(); // Debug
+			game.printBoard();
 		}
 		
 		return ok;
@@ -295,7 +277,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 			} else {
 				System.out.println("Cannot find new BACKUP server (all nodes inactive except for the current one.)");
 				System.out.println("Wait for the new node"); // Bottle neck
-																// (a(killed),b,c(joined))
+															 // (a(killed),b,c(joined))
 				backupServer = null;
 			}
 			handlingBACKUPCrash = false;
@@ -364,12 +346,10 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		if(invokeUI && gui != null){
 			gui.updateBoard(role, game.getPlayers(), game.getBoard());
 		}
-		
 		if(printBoardAndScore){
 			game.printScore();
-			game.printBoard(); // Debug
+			game.printBoard();
 		}
-		
 		// Player quit game
 		if(ok && direction == 9){
 			System.out.println("Player quit game!!!");
@@ -572,7 +552,6 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 				MAIN
 	----------------------------------------------------------*/
 	public static void main(String[] args) throws Exception{
-		System.out.println("---TWO---");
 		if (args.length != 3) {
 			printHelp();
 			System.exit(0);
