@@ -12,7 +12,7 @@ public interface TrackerInterface extends Remote {
 	
 	CopyOnWriteArrayList<GameNodeInterface> getNodes() throws RemoteException;
 	
-	boolean addNodeToRMIRegistry(GameNodeInterface node) throws RemoteException, AlreadyBoundException;
+	boolean addNode(GameNodeInterface node) throws RemoteException, AlreadyBoundException;
 
 	void removeInactiveNodes() throws RemoteException;
 

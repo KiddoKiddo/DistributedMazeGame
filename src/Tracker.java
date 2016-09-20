@@ -137,7 +137,7 @@ public class Tracker extends UnicastRemoteObject implements TrackerInterface {
 		return nodes;
 	}
 	
-	public synchronized boolean addNodeToRMIRegistry(GameNodeInterface node) throws RemoteException, AlreadyBoundException {
+	public synchronized boolean addNode(GameNodeInterface node) throws RemoteException, AlreadyBoundException {
 		String nodeName = node.getPlayerId();
 		boolean isPrimary = false;
 		

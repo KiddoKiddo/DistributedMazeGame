@@ -184,7 +184,8 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		// Update 'nodes', 'game' to BACKUP
 		updateNodeAndBackup(node);
 		
-		if (invokeUI){
+		// Update board after resolve other user's request to move
+		if (invokeUI && gui != null){
 			gui.updateBoard(role, game.getPlayers(), game.getBoard());
 		}
 		if(printBoardAndScore){
@@ -241,7 +242,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		// Update 'nodes', 'game' to BACKUP
 		updateNodeAndBackup(node);
 		
-		if (invokeUI){
+		if (invokeUI && gui != null){
 			gui.updateBoard(role, game.getPlayers(), game.getBoard());
 		}
 		if(printBoardAndScore){
@@ -301,7 +302,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		}
 	}
 	/**
-	 * This is to setup periodically ping to nodes to remove inactive one
+	 * This is to setup periodically ping to nodes to remove inactive ones
 	 * Meant for PRIMARY only
 	 */
 	private void setupCleanNodesTask() {
@@ -359,8 +360,8 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		if(!ok){
 			System.out.println("!!!Cannot move!!!");
 		}
-		// Update board
-		if(invokeUI){
+		// Update board in requesting user
+		if(invokeUI && gui != null){
 			gui.updateBoard(role, game.getPlayers(), game.getBoard());
 		}
 		
@@ -570,14 +571,12 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 	/*----------------------------------------------------------
 				MAIN
 	----------------------------------------------------------*/
-	// Should handle Exception probably here
 	public static void main(String[] args) throws Exception{
 		System.out.println("---TWO---");
 		if (args.length != 3) {
 			printHelp();
 			System.exit(0);
 		}
-		
 		// Parse all arguments
 		String ip = args[0];
 		int port = Integer.parseInt(args[1]);
@@ -600,9 +599,9 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 
 			GameNodeInterface newNode = new GameNode(playerId);
 			
-			// This 'contact' method is synchronous to prevent 2 first nodes contacting at the same time
-			// Contact and register itself to the rmiregistry
-			boolean isPrimary = tracker.addNodeToRMIRegistry(newNode);
+			// This 'addNode' method is synchronous to prevent 
+			// 2 first nodes contacting at the same time, become 2 PRIMARY
+			boolean isPrimary = tracker.addNode(newNode);
 			
 			/*
 			 *  First game node joins
@@ -621,17 +620,16 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 				// Ping all the nodes to find an active one
 				boolean found = false;
 				for(GameNodeInterface node : tracker.getNodes()){
-					
 					try {
 						node.ping(); // ping all nodes to gather list of inactive nodes
 						
 						if(!found){
 							found = true;
 							if(!found) System.out.print("Contacting...["+node.getPlayerId()+"]...OK");
-							
-							newNode.setupNormalGameNode(playerId, node); // Only use the first found node
-							
+							// Only use the first found node
+							newNode.setupNormalGameNode(playerId, node); 
 							System.out.println("Joined the game. ["+ (System.currentTimeMillis()-start) + "ms] ");
+							break;
 						}
 					} catch (RemoteException e) {
 						if(!found) System.out.println("Retrying to contact other nodes...");

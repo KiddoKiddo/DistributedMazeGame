@@ -80,7 +80,7 @@ public class GameGUI extends JFrame implements Serializable {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationByPlatform(true);
 		pack();
-		setMinimumSize(this.getSize());
+		setResizable(false);
 		setVisible(true);
 		
 		this.playerId = playerId;
@@ -106,7 +106,7 @@ public class GameGUI extends JFrame implements Serializable {
 		/**
 		 * Update role in the title
 		 */
-		setTitle(playerId + (role == 1? " (PRIMARY) " : role == 2? " (BACKUP) " : ""));
+		setTitle(playerId + (role == 1? " ** PRIMARY ** " : role == 2? " ** BACKUP ** " : ""));
 		
 		/**
 		 * Score board
