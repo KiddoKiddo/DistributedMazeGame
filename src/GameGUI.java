@@ -9,6 +9,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -78,7 +79,6 @@ public class GameGUI extends JFrame implements Serializable {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationByPlatform(true);
 		pack();
-		setMinimumSize(getSize());
 		setResizable(false);
 		setVisible(true);
 		
@@ -101,31 +101,34 @@ public class GameGUI extends JFrame implements Serializable {
 		}
 	}
 	
-	public synchronized void updateBoard(int role, Map<String, Player> players, String[][] board){
-		/**
-		 * Update role in the title
-		 */
-		setTitle(playerId + (role == 1? " ** PRIMARY ** " : role == 2? " ** BACKUP ** " : ""));
+	public void updateBoard(int role, Map<String, Player> players, String[][] board){
 		
-		/**
-		 * Score board
-		 */
-		DefaultTableModel score = (DefaultTableModel) table.getModel();
-		score.setRowCount(0); // Clear
-		for	(String playerId : players.keySet()) {
-			Player p = players.get(playerId);
-	        score.addRow(new String[]{p.getId(), String.valueOf(p.getScore())});
-	    }
-	    score.fireTableDataChanged();
-		
-		/**
-		 *  Maze board
-		 */
-		DefaultTableModel mazeModel = (DefaultTableModel) maze.getModel();
-		mazeModel.setRowCount(0); // Clear
-		for	(int i = 0; i < board.length; i++) {
-	        mazeModel.addRow(board[i]);
-	    }
-	    mazeModel.fireTableDataChanged();
+		SwingUtilities.invokeLater(new Runnable() {
+		    public void run() {
+		    	/**
+				 * Update role in the title
+				 */
+				setTitle(playerId + (role == 1? " ** PRIMARY ** " : role == 2? " ** BACKUP ** " : ""));
+				
+				/**
+				 * Score board
+				 */
+				DefaultTableModel score = (DefaultTableModel) table.getModel();
+				score.setRowCount(0); // Clear
+				for	(String playerId : players.keySet()) {
+					Player p = players.get(playerId);
+			        score.addRow(new Object[]{p.getId(), p.getScore()});
+			    }
+				
+				/**
+				 *  Maze board
+				 */
+				DefaultTableModel mazeModel = (DefaultTableModel) maze.getModel();
+				mazeModel.setRowCount(0); // Clear
+				for	(int i = 0; i < board.length; i++) {
+			        mazeModel.addRow(board[i]);
+			    }
+		    }
+		});
 	}
 }

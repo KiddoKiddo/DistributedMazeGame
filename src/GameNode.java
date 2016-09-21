@@ -21,7 +21,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 	private static final boolean invokeUI = true;
 	private static final boolean printBoardAndScore = false;
 
-	public String playerId;
+	String playerId;
 	// 1: primaryServer, 2: backupServe, 0: normalNode (used in GUI to indicate whether it is servers)
 	int role;
 	
@@ -38,10 +38,10 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 	 *  Data below need to be synchronously updated
 	 *  The version holding by PRIMARY, BACKUP should be the main reference
 	 */
-	public Game game;
-	public Map<String, GameNodeInterface> nodes;
+	Game game;
+	Map<String, GameNodeInterface> nodes;
 
-	public static Thread input; 
+	static Thread input; 
 	
 	@Override
 	public String toString() {
@@ -52,8 +52,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		this.playerId = playerId;
 	}
 
-	@Override
-	public void setupFirstGameNode(String playerId, int N, int K) throws GameException, RemoteException{
+	private void setupFirstGameNode(String playerId, int N, int K) throws GameException, RemoteException{
 		this.role = 1;
 		
 		// Assign itself to be primary server
@@ -84,8 +83,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		setupCleanNodesTask();
 	}
 
-	@Override
-	public void setupNormalGameNode(String playerId, GameNodeInterface otherNode) throws RemoteException {
+	private void setupNormalGameNode(String playerId, GameNodeInterface otherNode) throws RemoteException {
 		this.role = 0;
 		
 		while(otherNode.getPrimaryServer()==null || otherNode.getNodes()==null || otherNode.getGame()==null){
@@ -136,6 +134,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 	 ----------------------------------------------------------*/
 	/**
 	 * This method should be invoked by setupNormalGameNode()
+	 * This method is synchronous so that player added one by one
 	 */
 	@Override
 	public synchronized void addNewNode(GameNodeInterface node) throws RemoteException{
@@ -176,7 +175,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		}
 	}
 	/**
-	 * This method should be invoked by requestMove()
+	 * This method should be invoked by requestMove() from each player
 	 * This method is not synchronous because multiple players can move at the same time.
 	 */
 	@Override
@@ -317,7 +316,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 	/*----------------------------------------------------------
 			This is CLIENT side functions
 	----------------------------------------------------------*/
-	public void requestMove(int direction) throws RemoteException {
+	private void requestMove(int direction) throws RemoteException {
 		System.out.println("\r\nMove "+direction+" - (slate): " + nodes.keySet());
 		boolean ok = false;
 		try {
@@ -403,14 +402,14 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		return;
 	}
 	@Override
-	public void updateAll(GameNodeInterface primary, GameNodeInterface backup, Game game, Map<String, GameNodeInterface> nodes) throws RemoteException{
+	public synchronized void updateAll(GameNodeInterface primary, GameNodeInterface backup, Game game, Map<String, GameNodeInterface> nodes) throws RemoteException{
 		updatePrimaryServer(primary);
 		updateBackUpServer(backup);
 		updateGame(game);
 		updateNodes(nodes);
 	}
 	@Override
-	public void updatePrimaryServer(GameNodeInterface primary) throws RemoteException {
+	public synchronized void updatePrimaryServer(GameNodeInterface primary) throws RemoteException {
 		primaryServer = primary;
 		if ( equals(this, primary) ) {
 			System.out.println("PRIMARY server: ***YOU*** ");
@@ -420,7 +419,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		}
 	}
 	@Override	
-	public void updateBackUpServer(GameNodeInterface backup) throws RemoteException {
+	public synchronized void updateBackUpServer(GameNodeInterface backup) throws RemoteException {
 		backupServer = backup;
 		if ( equals(this, backup) ) {
 			System.out.println("BACKUP server: ***YOU*** ");
@@ -430,12 +429,12 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 		}
 	}
 	@Override
-	public void updateGame(Game game) throws RemoteException {
+	public synchronized void updateGame(Game game) throws RemoteException {
 		this.game.setBoard(game.getBoard());
 		this.game.setPlayers(game.getPlayers());
 	}
 	@Override
-	public void updateNodes(Map<String, GameNodeInterface> nodes) throws RemoteException {
+	public synchronized void updateNodes(Map<String, GameNodeInterface> nodes) throws RemoteException {
 		this.nodes = nodes;
 	}
 	
@@ -576,7 +575,7 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 			registry = LocateRegistry.getRegistry(ip, port);
 			TrackerInterface tracker = (TrackerInterface) registry.lookup("Tracker");
 
-			GameNodeInterface newNode = new GameNode(playerId);
+			GameNode newNode = new GameNode(playerId);
 			
 			// This 'addNode' method is synchronous to prevent 
 			// 2 first nodes contacting at the same time, become 2 PRIMARY

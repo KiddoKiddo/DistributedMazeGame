@@ -1,7 +1,6 @@
 import java.rmi.AlreadyBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public interface TrackerInterface extends Remote {

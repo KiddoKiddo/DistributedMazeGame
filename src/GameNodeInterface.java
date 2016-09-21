@@ -5,10 +5,6 @@ import java.util.Vector;
 
 public interface GameNodeInterface extends Remote{
 	
-	void setupFirstGameNode(String playerId, int N, int K) throws GameException, RemoteException;
-	
-	void setupNormalGameNode(String playerId, GameNodeInterface otherNode) throws RemoteException;
-	
 	/*----------------------------------------------------------
 		This is SERVER side functions
 	----------------------------------------------------------*/
@@ -20,8 +16,6 @@ public interface GameNodeInterface extends Remote{
 	/*----------------------------------------------------------
 		This is CLIENT side functions
 	----------------------------------------------------------*/
-	
-	void requestMove(int parseInt) throws RemoteException;
 	
 	String getPlayerId() throws RemoteException;
 	
