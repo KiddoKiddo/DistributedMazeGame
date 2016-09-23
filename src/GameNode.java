@@ -432,6 +432,10 @@ public class GameNode extends UnicastRemoteObject implements GameNodeInterface {
 	public synchronized void updateGame(Game game) throws RemoteException {
 		this.game.setBoard(game.getBoard());
 		this.game.setPlayers(game.getPlayers());
+		
+		if (invokeUI && gui != null){
+			gui.updateBoard(role, game.getPlayers(), game.getBoard());
+		}
 	}
 	@Override
 	public synchronized void updateNodes(Map<String, GameNodeInterface> nodes) throws RemoteException {
